@@ -62,8 +62,24 @@ data Bool : Set where
    instead of a boolean), Agda will report a typechecking error.
 -}
 
+{--
+napišeš b ⊕ b' = {}
+greš v bracket in cc cc, split on variable
+se ti izpišejo vse monosti
+greš s kurzorjem v bracket
+cc c-space
+--}
+
+
 _⊕_ : Bool → Bool → Bool
-b ⊕ b' = {!!}
+{-true ⊕ true = {}
+true ⊕ false = {}
+false ⊕ true = {}
+false ⊕ false = {} -}
+true ⊕ true = false
+true ⊕ false = true
+false ⊕ true = true
+false ⊕ false = false
 
 {-
    You can test whether your definition computes correctly by using
@@ -75,6 +91,7 @@ b ⊕ b' = {!!}
    exercise sheet to test whether your solutions compute correctly.
 -}
 
+{--če hočeš pognat klikneš cc cn, utipkaš izraz in potem enter--}
 
 ----------------
 -- Exercise 2 --
@@ -95,7 +112,7 @@ data ℕ : Set where
 -}
 
 incr : ℕ → ℕ
-incr n = {!!}
+incr n = suc n
 
 {-
    Define a function that decrements a number by one. Give the definition
@@ -103,7 +120,8 @@ incr n = {!!}
 -}
 
 decr : ℕ → ℕ
-decr n = {!!}
+decr zero = zero
+decr (suc n) = n
 
 {-
    Define a function that triples the value of a given number.
@@ -111,7 +129,9 @@ decr n = {!!}
 -}
 
 triple : ℕ → ℕ
-triple n = {!!}
+triple zero = zero
+triple (suc zero) = suc (suc (suc zero))
+triple (suc n) = suc (suc (suc (triple n)))
 
 
 ----------------
@@ -142,7 +162,8 @@ infixl 7  _*_
 -}
 
 _^_ : ℕ → ℕ → ℕ
-m ^ n = {!!}
+m ^ zero = suc zero
+m ^ suc n = (m ^ n) * m
 
 infixl 8  _^_
 
@@ -178,7 +199,9 @@ infixl 20 _I
 -}
 
 b-incr : Bin → Bin
-b-incr b = {!!}
+b-incr ⟨⟩ = ⟨⟩ I
+b-incr (b O) = b I
+b-incr (b I) = (b-incr b) O -- b-incr (b1 b2 b3 ... bn 1) = 
 
 
 ----------------
@@ -195,11 +218,25 @@ b-incr b = {!!}
 -}
 
 to : ℕ → Bin
-to n = {!!}
+to zero = ⟨⟩ O
+to (suc n) = b-incr (to n)
 
 from : Bin → ℕ
-from b = {!!}
+ {-from ⟨⟩ = {!   !}
+from (b O) = {!   !}
+from (b I) = {!   !} -}
+from b = from-aux b 0 
+   where
+   from-aux : Bin → ℕ → ℕ 
+   from-aux ⟨⟩ n = 0
+   from-aux (b O) n = from-aux b (suc n)
+   from-aux (b I) n = from-aux b (suc n) + 2 ^ n  
 
+{--
+postulate (if you want to check if functions are equal)
+
+from-equal : (b : Bin) → (from b) ≡n (from' b)
+-}
 
 ----------------
 -- Exercise 6 --
@@ -218,6 +255,7 @@ data Even : ℕ → Set where
 -}
 
 data Even₂ : Bin → Set where
+   even₂ : {b : Bin} → Even₂ (b O)
   {- EXERCISE: add the constructors for this inductive predicate here -}
 
 
@@ -230,8 +268,16 @@ data Even₂ : Bin → Set where
    if needed, do not be afraid to define auxiliary functions/proofs.
 -}
 
-to-even : {n : ℕ} → Even n → Even₂ (to n)
-to-even p = {!!}
+to-even : {n : ℕ} → Even n → Even₂ (to n) --read: if n is even then (to n) is even
+to-even even-z = even₂    -- p = even-z, P : Even n, zero-z : Even zero ==> agda can deduce that n = zero
+                                 -- now we just have to prove that zero is even
+                                 -- cc ca ti da rešitev, če probaš karkol druzga in cc cspace ne bo šlo 
+-- to-even {zero} even-z = even₂     
+to-even (even-ss {n} p) = b-incr-incr-even (to-even p)
+   where
+      b-incr-incr-even : {b : Bin} → Even₂ b → Even₂ (b-incr (b-incr b))
+      b-incr-incr-even even₂ = even₂
+
 
 
 ----------------
@@ -253,7 +299,8 @@ to-even p = {!!}
 
 data NonEmptyBin : Bin → Set where
   {- EXERCISE: add the constructors for this inductive predicate here -}
-
+   neO : {b : Bin} → NonEmptyBin (b O)
+   neI : {b : Bin} → NonEmptyBin (b I)
 {-
    To verify that `NonEmptyBin ⟨⟩` is indeed not inhabited as intended,
    show that you can define a function from it to Agda's empty type
@@ -263,8 +310,7 @@ data NonEmptyBin : Bin → Set where
 data ⊥ : Set where
 
 ⟨⟩-empty : NonEmptyBin ⟨⟩ → ⊥
-⟨⟩-empty p = {!!}
-
+⟨⟩-empty ()
 
 ----------------
 -- Exercise 9 --
@@ -280,8 +326,12 @@ data ⊥ : Set where
 -}
 
 from-ne : (b : Bin) → NonEmptyBin b → ℕ
-from-ne b p = {!!}
-
+from-ne (⟨⟩ O) neO = zero
+from-ne (b O O) neO = 2 * (from-ne (b O) neO)
+from-ne (b I O) neO = 2 * (from-ne (b I) neI)
+from-ne (⟨⟩ I) neI = 1
+from-ne (b O I) neI = 1 + 2 * (from-ne (b O) neO)
+from-ne (b I I) neI = 1 + 2 * (from-ne (b I) neI)
 
 -----------------
 -- Exercise 10 --
@@ -313,7 +363,8 @@ infixr 5 _∷_
 -}
 
 map : {A B : Set} → (A → B) → List A → List B
-map f xs = {!!}
+map f [] = []
+map f (x ∷ xs) = f x ∷ map f xs
 
 
 -----------------
@@ -325,7 +376,8 @@ map f xs = {!!}
 -}
 
 length : {A : Set} → List A → ℕ
-length xs = {!!}
+length [] = 0
+length (x ∷ xs) = 1 + length xs
 
 -----------------
 -- Exercise 12 --
@@ -346,7 +398,8 @@ data _≡ᴺ_ : ℕ → ℕ → Set where
 -}
 
 map-≡ᴺ : {A B : Set} {f : A → B} → (xs : List A) → length xs ≡ᴺ length (map f xs)
-map-≡ᴺ xs = {!!}
+map-≡ᴺ [] = z≡ᴺz
+map-≡ᴺ (x ∷ xs) = s≡ᴺs (map-≡ᴺ xs)
 
 
 -----------------
@@ -371,6 +424,9 @@ infix 4 _≤_
 
 data _≤ᴸ_ {A : Set} : List A → List A → Set where
   {- EXERCISE: add the constructors for this inductive relation here -}
+   []≤ᴸxs : {xs : List A} → [] ≤ᴸ xs
+   ∷≤ᴸ∷   : {x y : A} → {xs ys : List A} → xs ≤ᴸ ys → x ∷ xs ≤ᴸ y ∷ ys
+
 
 infix 4 _≤ᴸ_
 
@@ -385,10 +441,12 @@ infix 4 _≤ᴸ_
 -}
 
 length-≤ᴸ-≦ : {A : Set} {xs ys : List A} → xs ≤ᴸ ys → length xs ≤ length ys
-length-≤ᴸ-≦ p = {!!}
+length-≤ᴸ-≦ []≤ᴸxs = z≤n
+length-≤ᴸ-≦ (∷≤ᴸ∷ p) = s≤s (length-≤ᴸ-≦ p)
 
 length-≤-≦ᴸ : {A : Set} (xs ys : List A) → length xs ≤ length ys → xs ≤ᴸ ys
-length-≤-≦ᴸ xs ys p = {!!}
+length-≤-≦ᴸ [] ys z≤n = []≤ᴸxs
+length-≤-≦ᴸ (x ∷ xs) (x₁ ∷ ys) (s≤s p) = ∷≤ᴸ∷ (length-≤-≦ᴸ xs ys p)
 
 
 -----------------
@@ -405,3 +463,4 @@ length-≤-≦ᴸ xs ys p = {!!}
    - "less than or equal" order
    - show that `from` takes even numbers to even numbers
 -}
+ 
