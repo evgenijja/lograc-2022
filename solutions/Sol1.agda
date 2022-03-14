@@ -1,16 +1,13 @@
----------------------------------------------------------------------------
--- Week 1 exercises for the Logika v računalništvu course at UL FMF      --
--- Lecturer: Andrej Bauer                                                --
--- Teaching Assistant: Danel Ahman                                       --
---                                                                       --
--- Course website: https://ucilnica.fmf.uni-lj.si/course/view.php?id=252 --
--- Lecture notes: http://www.andrej.com/zapiski/ISRM-LOGRAC-2022/        --
----------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+-- Solutions to Week 1 exercises for the Logika v računalništvu course at UL FMF  --
+-- Lecturer: Andrej Bauer                                                         --
+-- Teaching Assistant: Danel Ahman                                                --
+--                                                                                --
+-- Course website: https://ucilnica.fmf.uni-lj.si/course/view.php?id=252          --
+-- Lecture notes: http://www.andrej.com/zapiski/ISRM-LOGRAC-2022/                 --
+------------------------------------------------------------------------------------
 
-module Ex1 where
-
--- dodajam komentar 
--- dela normalno ck cc
+module Sol1 where
 
 ----------------
 -- Exercise 0 --
@@ -38,9 +35,9 @@ module Ex1 where
 -}
 
 
-------------------
+----------------
 -- Exercise 1 --
-------------------
+----------------
 
 {-
    Recall the type of booleans from the lecture.
@@ -65,23 +62,10 @@ data Bool : Set where
    instead of a boolean), Agda will report a typechecking error.
 -}
 
-{--
-napišeš b ⊕ b' = {}
-greš v bracket in cc cc, split on variable
-se ti izpišejo vse monosti
-greš s kurzorjem v bracket
-cc c-space
---}
-
-
 _⊕_ : Bool → Bool → Bool
-{-true ⊕ true = {}
-true ⊕ false = {}
-false ⊕ true = {}
-false ⊕ false = {} -}
-true ⊕ true = false
-true ⊕ false = true
-false ⊕ true = true
+true  ⊕ true  = false
+true  ⊕ false = true
+false ⊕ true  = true
 false ⊕ false = false
 
 {-
@@ -94,7 +78,6 @@ false ⊕ false = false
    exercise sheet to test whether your solutions compute correctly.
 -}
 
-{--če hočeš pognat klikneš cc cn, utipkaš izraz in potem enter--}
 
 ----------------
 -- Exercise 2 --
@@ -123,7 +106,7 @@ incr n = suc n
 -}
 
 decr : ℕ → ℕ
-decr zero = zero
+decr zero    = 0
 decr (suc n) = n
 
 {-
@@ -132,8 +115,7 @@ decr (suc n) = n
 -}
 
 triple : ℕ → ℕ
-triple zero = zero
-triple (suc zero) = suc (suc (suc zero))
+triple zero    = zero
 triple (suc n) = suc (suc (suc (triple n)))
 
 
@@ -165,8 +147,8 @@ infixl 7  _*_
 -}
 
 _^_ : ℕ → ℕ → ℕ
-m ^ zero = suc zero
-m ^ suc n = (m ^ n) * m
+m ^ zero  = 1
+m ^ suc n = m * (m ^ n)
 
 infixl 8  _^_
 
@@ -202,9 +184,9 @@ infixl 20 _I
 -}
 
 b-incr : Bin → Bin
-b-incr ⟨⟩ = ⟨⟩ I
+b-incr ⟨⟩    = ⟨⟩ I
 b-incr (b O) = b I
-b-incr (b I) = (b-incr b) O -- b-incr (b1 b2 b3 ... bn 1) = 
+b-incr (b I) = (b-incr b) O
 
 
 ----------------
@@ -221,25 +203,35 @@ b-incr (b I) = (b-incr b) O -- b-incr (b1 b2 b3 ... bn 1) =
 -}
 
 to : ℕ → Bin
-to zero = ⟨⟩ O
+to zero    = ⟨⟩ O
 to (suc n) = b-incr (to n)
 
 from : Bin → ℕ
- {-from ⟨⟩ = {!   !}
-from (b O) = {!   !}
-from (b I) = {!   !} -}
-from b = from-aux b 0 
-   where
-   from-aux : Bin → ℕ → ℕ 
-   from-aux ⟨⟩ n = 0
-   from-aux (b O) n = from-aux b (suc n)
-   from-aux (b I) n = from-aux b (suc n) + 2 ^ n  
+from ⟨⟩ = 0
+from (b O) = 2 * (from b)
+from (b I) = 1 + 2 * (from b)
 
-{--
-postulate (if you want to check if functions are equal)
-
-from-equal : (b : Bin) → (from b) ≡n (from' b)
+{-
+   And an alternative definition using auxiliary function and
+   explicit tracking at which index the definition is at.
 -}
+
+from' : Bin → ℕ
+from' b = from'-aux b 0
+
+  where
+
+    from'-aux : Bin → ℕ → ℕ
+    from'-aux ⟨⟩    n = 0
+    from'-aux (b O) n = from'-aux b (1 + n)
+    from'-aux (b I) n = 2 ^ n + from'-aux b (1 + n)
+
+{-
+   Extra challenge: Prove that these two functions are equal
+   using the observational equality ≡ᴺ defined below. This
+   is going to be a bit of work as you will need to develop
+   various lemmas proving properties of `+`, `*`, `^`, etc.
+-} 
 
 ----------------
 -- Exercise 6 --
@@ -258,8 +250,7 @@ data Even : ℕ → Set where
 -}
 
 data Even₂ : Bin → Set where
-   even₂ : {b : Bin} → Even₂ (b O)
-  {- EXERCISE: add the constructors for this inductive predicate here -}
+  even₂  : {b : Bin} → Even₂ (b O)
 
 
 ----------------
@@ -271,16 +262,14 @@ data Even₂ : Bin → Set where
    if needed, do not be afraid to define auxiliary functions/proofs.
 -}
 
-to-even : {n : ℕ} → Even n → Even₂ (to n) --read: if n is even then (to n) is even
-to-even even-z = even₂    -- p = even-z, P : Even n, zero-z : Even zero ==> agda can deduce that n = zero
-                                 -- now we just have to prove that zero is even
-                                 -- cc ca ti da rešitev, če probaš karkol druzga in cc cspace ne bo šlo 
--- to-even {zero} even-z = even₂     
+to-even : {n : ℕ} → Even n → Even₂ (to n)
+to-even even-z = even₂
 to-even (even-ss {n} p) = b-incr-incr-even (to-even p)
-   where
-      b-incr-incr-even : {b : Bin} → Even₂ b → Even₂ (b-incr (b-incr b))
-      b-incr-incr-even even₂ = even₂
 
+  where
+  
+    b-incr-incr-even : {b : Bin} → Even₂ b → Even₂ (b-incr (b-incr b))
+    b-incr-incr-even even₂ = even₂
 
 
 ----------------
@@ -301,9 +290,9 @@ to-even (even-ss {n} p) = b-incr-incr-even (to-even p)
 -}
 
 data NonEmptyBin : Bin → Set where
-  {- EXERCISE: add the constructors for this inductive predicate here -}
-   neO : {b : Bin} → NonEmptyBin (b O)
-   neI : {b : Bin} → NonEmptyBin (b I)
+  neO : {b : Bin} → NonEmptyBin (b O)
+  neI : {b : Bin} → NonEmptyBin (b I)
+
 {-
    To verify that `NonEmptyBin ⟨⟩` is indeed not inhabited as intended,
    show that you can define a function from it to Agda's empty type
@@ -314,6 +303,7 @@ data ⊥ : Set where
 
 ⟨⟩-empty : NonEmptyBin ⟨⟩ → ⊥
 ⟨⟩-empty ()
+
 
 ----------------
 -- Exercise 9 --
@@ -329,12 +319,31 @@ data ⊥ : Set where
 -}
 
 from-ne : (b : Bin) → NonEmptyBin b → ℕ
-from-ne (⟨⟩ O) neO = zero
+from-ne (⟨⟩ O)  neO = zero
 from-ne (b O O) neO = 2 * (from-ne (b O) neO)
 from-ne (b I O) neO = 2 * (from-ne (b I) neI)
-from-ne (⟨⟩ I) neI = 1
+from-ne (⟨⟩ I)  neI = 1
 from-ne (b O I) neI = 1 + 2 * (from-ne (b O) neO)
 from-ne (b I I) neI = 1 + 2 * (from-ne (b I) neI)
+
+{-
+   And an alternative definition using auxiliary function and
+   explicit tracking at which index the definition is at.
+-}
+
+from-ne' : (b : Bin) → NonEmptyBin b → ℕ
+from-ne' b p = from-ne-aux' b p 0
+
+  where
+
+    from-ne-aux' : (b : Bin) → NonEmptyBin b → ℕ → ℕ
+    from-ne-aux' (⟨⟩ O)    neO n = 0
+    from-ne-aux' ((b O) O) neO n = from-ne-aux' (b O) neO (1 + n)
+    from-ne-aux' ((b I) O) neO n = from-ne-aux' (b I) neI (1 + n)
+    from-ne-aux' (⟨⟩ I)    neI n = 2 ^ n
+    from-ne-aux' ((b O) I) neI n = 2 ^ n + from-ne-aux' (b O) neO (1 + n)
+    from-ne-aux' ((b I) I) neI n = 2 ^ n + from-ne-aux' (b I) neI (1 + n)
+
 
 -----------------
 -- Exercise 10 --
@@ -366,8 +375,8 @@ infixr 5 _∷_
 -}
 
 map : {A B : Set} → (A → B) → List A → List B
-map f [] = []
-map f (x ∷ xs) = f x ∷ map f xs
+map f []        =  []
+map f (x ∷ xs)  =  f x ∷ map f xs
 
 
 -----------------
@@ -379,8 +388,9 @@ map f (x ∷ xs) = f x ∷ map f xs
 -}
 
 length : {A : Set} → List A → ℕ
-length [] = 0
+length []       = 0
 length (x ∷ xs) = 1 + length xs
+
 
 -----------------
 -- Exercise 12 --
@@ -401,7 +411,7 @@ data _≡ᴺ_ : ℕ → ℕ → Set where
 -}
 
 map-≡ᴺ : {A B : Set} {f : A → B} → (xs : List A) → length xs ≡ᴺ length (map f xs)
-map-≡ᴺ [] = z≡ᴺz
+map-≡ᴺ []       = z≡ᴺz
 map-≡ᴺ (x ∷ xs) = s≡ᴺs (map-≡ᴺ xs)
 
 
@@ -426,10 +436,8 @@ infix 4 _≤_
 -}
 
 data _≤ᴸ_ {A : Set} : List A → List A → Set where
-  {- EXERCISE: add the constructors for this inductive relation here -}
-   []≤ᴸxs : {xs : List A} → [] ≤ᴸ xs
-   ∷≤ᴸ∷   : {x y : A} → {xs ys : List A} → xs ≤ᴸ ys → x ∷ xs ≤ᴸ y ∷ ys
-
+  []≤ᴸxs : {xs : List A} → [] ≤ᴸ xs
+  ∷≤ᴸ∷   : {x y : A} → {xs ys : List A} → xs ≤ᴸ ys → x ∷ xs ≤ᴸ y ∷ ys
 
 infix 4 _≤ᴸ_
 
@@ -444,12 +452,12 @@ infix 4 _≤ᴸ_
 -}
 
 length-≤ᴸ-≦ : {A : Set} {xs ys : List A} → xs ≤ᴸ ys → length xs ≤ length ys
-length-≤ᴸ-≦ []≤ᴸxs = z≤n
+length-≤ᴸ-≦ []≤ᴸxs   = z≤n
 length-≤ᴸ-≦ (∷≤ᴸ∷ p) = s≤s (length-≤ᴸ-≦ p)
 
 length-≤-≦ᴸ : {A : Set} (xs ys : List A) → length xs ≤ length ys → xs ≤ᴸ ys
-length-≤-≦ᴸ [] ys z≤n = []≤ᴸxs
-length-≤-≦ᴸ (x ∷ xs) (x₁ ∷ ys) (s≤s p) = ∷≤ᴸ∷ (length-≤-≦ᴸ xs ys p)
+length-≤-≦ᴸ []       ys       z≤n     = []≤ᴸxs
+length-≤-≦ᴸ (x ∷ xs) (y ∷ ys) (s≤s p) = ∷≤ᴸ∷ (length-≤-≦ᴸ xs ys p)
 
 
 -----------------
@@ -465,9 +473,4 @@ length-≤-≦ᴸ (x ∷ xs) (x₁ ∷ ys) (s≤s p) = ∷≤ᴸ∷ (length-≤-
    - (observational) equality
    - "less than or equal" order
    - show that `from` takes even numbers to even numbers
-<<<<<<< HEAD
 -}
- 
-=======
--}
->>>>>>> 4d122a171c5f7fd5bbb7b08602aa3e37d55c8a25
